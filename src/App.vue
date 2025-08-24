@@ -3,10 +3,25 @@ import { items } from "./movies.json";
 import { reactive } from "vue";
 import { StarIcon } from "@heroicons/vue/24/solid";
 
-const movies = reactive(items);
+const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
+const movies = reactive(cloneMovies(items));
+
+const normalizeRating = (value, min = 0, max = 5) => {
+  let n = parseInt(value, 10);
+  if (Number.isNaN(n)) {
+    n = 0;
+  }
+  if (n < min) {
+    return min;
+  }
+  if (n > max) {
+    return max;
+  }
+  return n;
+};
 
 const setMovieRating = (movie, rating) => {
-  movie.rating = rating;
+  movie.rating = normalizeRating(rating);
 };
 </script>
 
