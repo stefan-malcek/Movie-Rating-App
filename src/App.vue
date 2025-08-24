@@ -3,7 +3,26 @@ import { items } from "./movies.json";
 import { reactive } from "vue";
 import { StarIcon } from "@heroicons/vue/24/solid";
 
-const movies = reactive(items);
+const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
+const movies = reactive(cloneMovies(items));
+
+const normalizeRating = (value, min = 0, max = 5) => {
+  let n = parseInt(value, 10);
+  if (Number.isNaN(n)) {
+    n = 0;
+  }
+  if (n < min) {
+    return min;
+  }
+  if (n > max) {
+    return max;
+  }
+  return n;
+};
+
+const setMovieRating = (movie, rating) => {
+  movie.rating = normalizeRating(rating);
+};
 </script>
 
 <template>
@@ -27,7 +46,7 @@ const movies = reactive(items);
             <div class="flex items-center justify-start space-x-1">
               <span
                 v-for="genre in movie.genres"
-                :key="`${movie.id}-${genre}`"
+                :key="`${movie.id}-genre-${genre}`"
                 class="text-xs bg-indigo-500 text-white py-0.5 px-2 rounded-full"
                 >{{ genre }}</span
               >
@@ -40,11 +59,19 @@ const movies = reactive(items);
             <span class="text-xs mr-2 leading-7">
               Rating: ({{ movie.rating }}/5)
             </span>
-            <StarIcon
-              v-for="star in movie.rating"
-              :key="`star-${star}`"
-              class="size-5 text-yellow-500"
-            />
+            <button
+              v-for="star in 5"
+              :key="`${movie.id}-star-${star}`"
+              class="size-5 cursor-pointer disabled:cursor-not-allowed"
+              :disabled="star === movie.rating"
+              @click="setMovieRating(movie, star)"
+            >
+              <StarIcon
+                :class="[
+                  star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
+                ]"
+              />
+            </button>
           </div>
         </div>
       </div>
