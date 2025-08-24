@@ -36,8 +36,8 @@ const setMovieRating = (movie, rating) => {
         <div class="w-full h-[520px] overflow-hidden relative">
           <img
             :src="movie.image"
+            :alt="`${movie.name} poster`"
             class="object-cover object-center h-[600px]"
-            alt="Movie poster"
           />
           <div class="absolute right-0 top-0 size-16">
             <StarIcon
