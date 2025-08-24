@@ -36,9 +36,27 @@ const setMovieRating = (movie, rating) => {
         <div class="w-full h-[520px] overflow-hidden relative">
           <img
             :src="movie.image"
+            :alt="`${movie.name} poster`"
             class="object-cover object-center h-[600px]"
-            alt=""
           />
+          <div class="absolute right-0 top-0 size-16">
+            <StarIcon
+              class="size-16"
+              :class="movie.rating ? 'text-yellow-500' : 'text-gray-500'"
+            />
+            <span
+              v-if="movie.rating"
+              class="absolute inset-0 flex items-center justify-center text-xl text-yellow-800"
+            >
+              {{ movie.rating }}
+            </span>
+            <span
+              v-else
+              class="absolute inset-0 flex items-center justify-center text-xl text-gray-400"
+            >
+              -
+            </span>
+          </div>
         </div>
         <div class="w-full h-56 p-4 flex flex-col items-start justify-start">
           <div class="w-full h-16 shrink-0">
@@ -57,7 +75,7 @@ const setMovieRating = (movie, rating) => {
           </div>
           <div class="w-full h-8 shrink-0 flex items-center justify-start">
             <span class="text-xs mr-2 leading-7">
-              Rating: ({{ movie.rating }}/5)
+              Rating: ({{ movie.rating ?? "-" }}/5)
             </span>
             <button
               v-for="star in 5"
