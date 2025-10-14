@@ -37,7 +37,7 @@ const errors = reactive({
 watch(
   form,
   () => {
-    console.log(form.value);
+    console.log(form);
   },
   { deep: true },
 );
@@ -58,11 +58,11 @@ const hideForm = () => {
 };
 
 const addMovie = () => {
-  if (!validate(form.value)) {
+  if (!validate(form)) {
     return;
   }
 
-  movies.push(form.value);
+  movies.push(form);
   resetForm();
   hideForm();
 };
