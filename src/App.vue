@@ -1,7 +1,7 @@
 <script setup>
 import { items } from "./movies.json";
 import { reactive, ref, watch } from "vue";
-import { StarIcon } from "@heroicons/vue/24/solid";
+import { StarIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/solid";
 
 const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
 const movies = reactive([...cloneMovies(items)]);
@@ -182,7 +182,7 @@ const clearErrors = () => {
       <div
         v-for="movie in movies"
         :key="movie.id"
-        class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl"
+        class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl group"
       >
         <div class="w-full h-[520px] overflow-hidden relative">
           <img
@@ -224,23 +224,35 @@ const clearErrors = () => {
           <div class="h-24 flex-1">
             <p class="text-sm">{{ movie.description }}</p>
           </div>
-          <div class="w-full h-8 shrink-0 flex items-center justify-start">
-            <span class="text-xs mr-2 leading-7">
-              Rating: ({{ movie.rating ?? "-" }}/5)
-            </span>
-            <button
-              v-for="star in 5"
-              :key="`${movie.id}-star-${star}`"
-              class="size-5 cursor-pointer disabled:cursor-not-allowed"
-              :disabled="star === movie.rating"
-              @click="setMovieRating(movie, star)"
+          <div class="w-full h-10 shrink-0 flex justify-between">
+            <div class="flex items-center justify-start">
+              <span class="text-xs mr-2 leading-7">
+                Rating: ({{ movie.rating ?? "-" }}/5)
+              </span>
+              <button
+                v-for="star in 5"
+                :key="`${movie.id}-star-${star}`"
+                class="size-5 cursor-pointer disabled:cursor-not-allowed"
+                :disabled="star === movie.rating"
+                @click="setMovieRating(movie, star)"
+              >
+                <StarIcon
+                  :class="[
+                    star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
+                  ]"
+                />
+              </button>
+            </div>
+            <div
+              class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2"
             >
-              <StarIcon
-                :class="[
-                  star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
-                ]"
-              />
-            </button>
+              <button class="float-button hover:bg-indigo-500">
+                <PencilIcon class="size-4" />
+              </button>
+              <button class="float-button hover:bg-red-500">
+                <TrashIcon class="size-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -255,5 +267,9 @@ const clearErrors = () => {
 
 .form-input {
   @apply w-full rounded-md bg-gray-900  border border-white/50 focus:border-blue-600 focus:outline-none px-2 py-1;
+}
+
+.float-button {
+  @apply rounded-full bg-gray-300 size-10 flex items-center justify-center hover:text-white;
 }
 </style>
