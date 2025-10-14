@@ -62,12 +62,13 @@ const addMovie = () => {
     return;
   }
 
-  movies.push(form);
+  movies.push({ ...form });
   resetForm();
   hideForm();
 };
 
 const validate = (input) => {
+  clearErrors();
   let success = true;
 
   if (!input.name) {
@@ -76,7 +77,7 @@ const validate = (input) => {
   }
 
   if (!input.image) {
-    errors.image = "Image are required";
+    errors.image = "Image is required";
     success = false;
   }
 
@@ -90,6 +91,10 @@ const resetForm = () => {
   form.genres = [];
   form.inTheaters = false;
 
+  clearErrors();
+};
+
+const clearErrors = () => {
   errors.name = null;
   errors.image = null;
 };
@@ -141,7 +146,6 @@ const resetForm = () => {
               {{ genre }}
             </option>
           </select>
-          <span v-if="errors.genres">{{ errors.genres }}</span>
         </div>
         <div class="form-element">
           <label class="flex items-center justify-start space-x-2">
