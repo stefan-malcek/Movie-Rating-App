@@ -41,6 +41,7 @@ const form = reactive({
   genres: [],
   inTheaters: false,
 });
+const editedMovie = ref(null);
 
 const errors = reactive({
   name: null,
@@ -61,12 +62,22 @@ const setMovieRating = (movie, rating) => {
 
 const showMovieForm = ref(false);
 
-const showForm = () => {
+const showForm = (movie) => {
   showMovieForm.value = true;
+
+  if (movie) {
+    editedMovie.value = movie;
+    form.name = movie.name;
+    form.description = movie.description;
+    form.image = movie.image;
+    form.genres = movie.genres;
+    form.inTheaters = movie.inTheaters;
+  }
 };
 
 const hideForm = () => {
   showMovieForm.value = false;
+  editedMovie.value = null;
   resetForm();
 };
 
@@ -76,12 +87,21 @@ const clearRatings = () => {
   });
 };
 
-const addMovie = () => {
+const saveMovie = () => {
   if (!validate(form)) {
     return;
   }
 
-  movies.push({ ...form });
+  if (editedMovie.value) {
+    editedMovie.value.name = form.name;
+    editedMovie.value.description = form.description;
+    editedMovie.value.image = form.image;
+    editedMovie.value.genres = form.genres;
+    editedMovie.value.inTheaters = form.inTheaters;
+  } else {
+    movies.push({ ...form });
+  }
+
   resetForm();
   hideForm();
 };
@@ -130,7 +150,7 @@ const clearErrors = () => {
       class="absolute inset-0 backdrop-blur bg-gray-800/40 z-10 flex items-center justify-center"
     >
       <form
-        @submit.prevent="addMovie"
+        @submit.prevent="saveMovie"
         class="shrink-0 w-full max-w-2xl rounded-md flex flex-col shadow-2xl bg-gray-800 p-4 space-y-5 text-white"
       >
         <div class="form-element">
@@ -188,7 +208,7 @@ const clearErrors = () => {
             type="submit"
             class="text-white bg-blue-400 rounded px-4 py-2"
           >
-            Create
+            Save
           </button>
         </div>
       </form>
@@ -280,7 +300,10 @@ const clearErrors = () => {
             <div
               class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2"
             >
-              <button class="float-button hover:bg-indigo-500">
+              <button
+                class="float-button hover:bg-indigo-500"
+                @click="showForm(movie)"
+              >
                 <PencilIcon class="size-4" />
               </button>
               <button
