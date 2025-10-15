@@ -70,6 +70,12 @@ const hideForm = () => {
   resetForm();
 };
 
+const removeRatings = () => {
+  movies.forEach((movie) => {
+    movie.rating = null;
+  });
+};
+
 const addMovie = () => {
   if (!validate(form)) {
     return;
@@ -187,12 +193,20 @@ const clearErrors = () => {
       <p class="text-white">
         Total Movies: {{ totalMovies }} / Average Rating: {{ averageRating }}
       </p>
-      <button
-        class="text-white bg-blue-500 rounded px-4 py-2"
-        @click="showForm"
-      >
-        Add Movie
-      </button>
+      <div class="flex gap-x-5">
+        <button
+          class="text-white bg-blue-500 rounded px-4 py-2"
+          @click="removeRatings"
+        >
+          Remove Ratings
+        </button>
+        <button
+          class="text-white bg-blue-500 rounded px-4 py-2"
+          @click="showForm"
+        >
+          Add Movie
+        </button>
+      </div>
     </div>
     <div class="flex items-center justify-center space-x-4">
       <div
