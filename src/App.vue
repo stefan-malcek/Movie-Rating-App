@@ -1,10 +1,23 @@
 <script setup>
 import { items } from "./movies.json";
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { StarIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/solid";
 
 const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
 const movies = reactive([...cloneMovies(items)]);
+
+const averageRating = computed(() => {
+  const ratings = movies.map((movie) => movie.rating);
+  return (
+    Math.round(
+      (ratings.reduce((acc, rating) => acc + rating, 0) / ratings.length) * 10,
+    ) / 10
+  );
+});
+
+const totalMovies = computed(() => {
+  return movies.length;
+});
 
 const normalizeRating = (value, min = 0, max = 5) => {
   let n = parseInt(value, 10);
@@ -170,7 +183,10 @@ const clearErrors = () => {
         </div>
       </form>
     </div>
-    <div class="flex justify-end w-5/6 px-20 py-10">
+    <div class="w-full flex justify-around py-10">
+      <p class="text-white">
+        Total Movies: {{ totalMovies }} / Average Rating: {{ averageRating }}
+      </p>
       <button
         class="text-white bg-blue-500 rounded px-4 py-2"
         @click="showForm"
