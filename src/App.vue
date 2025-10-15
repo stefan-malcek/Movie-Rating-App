@@ -70,7 +70,7 @@ const hideForm = () => {
   resetForm();
 };
 
-const removeRatings = () => {
+const clearRatings = () => {
   movies.forEach((movie) => {
     movie.rating = null;
   });
@@ -84,6 +84,10 @@ const addMovie = () => {
   movies.push({ ...form });
   resetForm();
   hideForm();
+};
+
+const removeMovie = (movie) => {
+  movies.splice(movies.indexOf(movie), 1);
 };
 
 const validate = (input) => {
@@ -196,7 +200,7 @@ const clearErrors = () => {
       <div class="flex gap-x-5">
         <button
           class="text-white bg-blue-500 rounded px-4 py-2"
-          @click="removeRatings"
+          @click="clearRatings"
         >
           Remove Ratings
         </button>
@@ -279,7 +283,10 @@ const clearErrors = () => {
               <button class="float-button hover:bg-indigo-500">
                 <PencilIcon class="size-4" />
               </button>
-              <button class="float-button hover:bg-red-500">
+              <button
+                class="float-button hover:bg-red-500"
+                @click="removeMovie(movie)"
+              >
                 <TrashIcon class="size-4" />
               </button>
             </div>
