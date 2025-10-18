@@ -1,90 +1,75 @@
 <script setup>
 import { items } from "./movies.json";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, ref } from "vue";
 import { StarIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/solid";
+import { cloneDeep } from "../utils/clone.js";
+import { normalizeRating } from "../utils/number.js";
 
-const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
-const movies = reactive([...cloneMovies(items)]);
+const movies = ref(cloneDeep(items));
 
 const averageRating = computed(() => {
-  const ratings = movies.map((movie) => movie.rating);
-  return (
-    Math.round(
-      (ratings.reduce((acc, rating) => acc + rating, 0) / ratings.length) * 10,
-    ) / 10
-  );
+  const filledRatings = movies.value.filter((m) => m.rating);
+  if (filledRatings.length === 0) {
+    return "-";
+  }
+
+  const average = filledRatings.reduce((acc, m) => acc + m.rating, 0);
+  return Number(average / filledRatings.length).toFixed(1);
 });
 
-const totalMovies = computed(() => {
-  return movies.length;
-});
+const totalMovies = computed(() => movies.value.length);
 
-const normalizeRating = (value, min = 0, max = 5) => {
-  let n = parseInt(value, 10);
-  if (Number.isNaN(n)) {
-    n = 0;
-  }
-  if (n < min) {
-    return min;
-  }
-  if (n > max) {
-    return max;
-  }
-  return n;
+const updateRating = (movieIndex, rating) => {
+  movies.value[movieIndex].rating = normalizeRating(rating);
+};
+
+const resetRatings = () => {
+  movies.value.forEach((movie) => {
+    movie.rating = null;
+  });
+};
+
+const showMovieForm = ref(false);
+
+const showForm = () => {
+  showMovieForm.value = true;
 };
 
 const availableGenres = reactive(["Action", "Comedy", "Drama", "Sci-Fi"]);
 const form = reactive({
+  id: null,
   name: null,
   description: null,
   image: null,
   genres: [],
   inTheaters: false,
 });
-const editedMovie = ref(null);
 
 const errors = reactive({
   name: null,
   image: null,
 });
 
-watch(
-  form,
-  () => {
-    console.log(form);
-  },
-  { deep: true },
-);
-
-const setMovieRating = (movie, rating) => {
-  movie.rating = normalizeRating(rating);
+const removeMovie = (movieIndex) => {
+  movies.value = movies.value.filter((_, index) => index !== movieIndex);
 };
 
-const showMovieForm = ref(false);
+const editMovie = (movieIndex) => {
+  const movie = movies.value[movieIndex];
 
-const showForm = (movie) => {
-  showMovieForm.value = true;
+  form.id = movie.id;
+  form.name = movie.name;
+  form.description = movie.description;
+  form.image = movie.image;
+  form.genres = movie.genres;
+  form.inTheaters = movie.inTheaters;
 
-  if (movie) {
-    editedMovie.value = movie;
-    form.name = movie.name;
-    form.description = movie.description;
-    form.image = movie.image;
-    form.genres = movie.genres;
-    form.inTheaters = movie.inTheaters;
-  }
+  showForm();
 };
 
 const hideForm = () => {
   showMovieForm.value = false;
-  editedMovie.value = null;
   resetForm();
-};
-
-const clearRatings = () => {
-  movies.forEach((movie) => {
-    movie.rating = null;
-  });
 };
 
 const saveMovie = () => {
@@ -92,22 +77,46 @@ const saveMovie = () => {
     return;
   }
 
-  if (editedMovie.value) {
-    editedMovie.value.name = form.name;
-    editedMovie.value.description = form.description;
-    editedMovie.value.image = form.image;
-    editedMovie.value.genres = form.genres;
-    editedMovie.value.inTheaters = form.inTheaters;
+  if (form.id) {
+    updateMovie();
   } else {
-    movies.push({ ...form });
+    addMovie();
   }
 
-  resetForm();
   hideForm();
 };
 
-const removeMovie = (movie) => {
-  movies.splice(movies.indexOf(movie), 1);
+const addMovie = () => {
+  if (!validate(form)) {
+    return;
+  }
+
+  const movie = {
+    id: Number(Date.now()),
+    name: form.name,
+    description: form.description,
+    image: form.image,
+    genres: form.genres,
+    inTheaters: form.inTheaters,
+  };
+  movies.value.push(movie);
+};
+
+const updateMovie = () => {
+  if (!validate(form)) {
+    return;
+  }
+
+  const movie = movies.value.find((m) => m.id === form.id);
+  if (!movie) {
+    return;
+  }
+
+  movie.name = form.name;
+  movie.description = form.description;
+  movie.image = form.image;
+  movie.genres = form.genres;
+  movie.inTheaters = form.inTheaters;
 };
 
 const validate = (input) => {
@@ -128,6 +137,7 @@ const validate = (input) => {
 };
 
 const resetForm = () => {
+  form.id = null;
   form.name = null;
   form.description = null;
   form.image = null;
@@ -220,9 +230,9 @@ const clearErrors = () => {
       <div class="flex gap-x-5">
         <button
           class="text-white bg-blue-500 rounded px-4 py-2"
-          @click="clearRatings"
+          @click="resetRatings"
         >
-          Remove Ratings
+          Reset Ratings
         </button>
         <button
           class="text-white bg-blue-500 rounded px-4 py-2"
@@ -234,7 +244,7 @@ const clearErrors = () => {
     </div>
     <div class="flex items-center justify-center space-x-4">
       <div
-        v-for="movie in movies"
+        v-for="(movie, movieIndex) in movies"
         :key="movie.id"
         class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl group"
       >
@@ -288,7 +298,7 @@ const clearErrors = () => {
                 :key="`${movie.id}-star-${star}`"
                 class="size-5 cursor-pointer disabled:cursor-not-allowed"
                 :disabled="star === movie.rating"
-                @click="setMovieRating(movie, star)"
+                @click="updateRating(movieIndex, star)"
               >
                 <StarIcon
                   :class="[
@@ -302,13 +312,13 @@ const clearErrors = () => {
             >
               <button
                 class="float-button hover:bg-indigo-500"
-                @click="showForm(movie)"
+                @click="editMovie(movieIndex)"
               >
                 <PencilIcon class="size-4" />
               </button>
               <button
                 class="float-button hover:bg-red-500"
-                @click="removeMovie(movie)"
+                @click="removeMovie(movieIndex)"
               >
                 <TrashIcon class="size-4" />
               </button>
