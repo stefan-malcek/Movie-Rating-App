@@ -154,7 +154,9 @@ const clearErrors = () => {
 </script>
 
 <template>
-  <div class="max-w-full h-screen flex-col items-center justify-center mx-auto">
+  <div
+    class="max-w-full h-screen flex flex-col items-center justify-center mx-auto"
+  >
     <div
       v-if="showMovieForm"
       class="absolute inset-0 backdrop-blur bg-gray-800/40 z-10 flex items-center justify-center"
@@ -223,20 +225,22 @@ const clearErrors = () => {
         </div>
       </form>
     </div>
-    <div class="w-full flex justify-around py-10">
-      <p class="text-white">
-        Total Movies: {{ totalMovies }} / Average Rating: {{ averageRating }}
-      </p>
-      <div class="flex gap-x-5">
+    <div class="w-full flex items-center justify-between max-w-6xl p-4 mb-4">
+      <div class="flex items-center justify-center gap-4 text-white">
+        <span> Total Movies: {{ totalMovies }}</span>
+        <span> / </span>
+        <span> Average Rating: {{ averageRating }}</span>
+      </div>
+      <div class="flex items-center justify-center space-x-5">
         <button
-          class="text-white bg-blue-500 rounded px-4 py-2"
+          class="text-white bg-blue-500 rounded-md px-4 py-2"
           @click="resetRatings"
         >
           Reset Ratings
         </button>
         <button
-          class="text-white bg-blue-500 rounded px-4 py-2"
-          @click="showForm"
+          class="text-white bg-blue-500 rounded-md px-4 py-2"
+          @click="showForm()"
         >
           Add Movie
         </button>
@@ -307,9 +311,7 @@ const clearErrors = () => {
                 />
               </button>
             </div>
-            <div
-              class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2"
-            >
+            <div class="hidden group-hover:flex space-x-2">
               <button
                 class="float-button hover:bg-indigo-500"
                 @click="editMovie(movieIndex)"
@@ -340,6 +342,6 @@ const clearErrors = () => {
 }
 
 .float-button {
-  @apply rounded-full bg-gray-300 size-10 flex items-center justify-center hover:text-white;
+  @apply rounded-full bg-gray-200 p-3 hover:text-white;
 }
 </style>
