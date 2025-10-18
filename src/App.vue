@@ -1,27 +1,43 @@
 <script setup>
 import { items } from "./movies.json";
-import { reactive, ref, watch } from "vue";
-import { StarIcon } from "@heroicons/vue/24/solid";
+import { computed, reactive, ref } from "vue";
+import { StarIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/solid";
+import { cloneDeep } from "../utils/clone.js";
+import { normalizeRating } from "../utils/number.js";
 
-const cloneMovies = (data) => JSON.parse(JSON.stringify(data));
-const movies = reactive([...cloneMovies(items)]);
+const movies = ref(cloneDeep(items));
 
-const normalizeRating = (value, min = 0, max = 5) => {
-  let n = parseInt(value, 10);
-  if (Number.isNaN(n)) {
-    n = 0;
+const averageRating = computed(() => {
+  const filledRatings = movies.value.filter((m) => m.rating);
+  if (filledRatings.length === 0) {
+    return "-";
   }
-  if (n < min) {
-    return min;
-  }
-  if (n > max) {
-    return max;
-  }
-  return n;
+
+  const average = filledRatings.reduce((acc, m) => acc + m.rating, 0);
+  return Number(average / filledRatings.length).toFixed(1);
+});
+
+const totalMovies = computed(() => movies.value.length);
+
+const updateRating = (movieIndex, rating) => {
+  movies.value[movieIndex].rating = normalizeRating(rating);
+};
+
+const resetRatings = () => {
+  movies.value.forEach((movie) => {
+    movie.rating = null;
+  });
+};
+
+const showMovieForm = ref(false);
+
+const showForm = () => {
+  showMovieForm.value = true;
 };
 
 const availableGenres = reactive(["Action", "Comedy", "Drama", "Sci-Fi"]);
 const form = reactive({
+  id: null,
   name: null,
   description: null,
   image: null,
@@ -34,22 +50,21 @@ const errors = reactive({
   image: null,
 });
 
-watch(
-  form,
-  () => {
-    console.log(form);
-  },
-  { deep: true },
-);
-
-const setMovieRating = (movie, rating) => {
-  movie.rating = normalizeRating(rating);
+const removeMovie = (movieIndex) => {
+  movies.value = movies.value.filter((_, index) => index !== movieIndex);
 };
 
-const showMovieForm = ref(false);
+const editMovie = (movieIndex) => {
+  const movie = movies.value[movieIndex];
 
-const showForm = () => {
-  showMovieForm.value = true;
+  form.id = movie.id;
+  form.name = movie.name;
+  form.description = movie.description;
+  form.image = movie.image;
+  form.genres = movie.genres;
+  form.inTheaters = movie.inTheaters;
+
+  showForm();
 };
 
 const hideForm = () => {
@@ -57,17 +72,55 @@ const hideForm = () => {
   resetForm();
 };
 
+const saveMovie = () => {
+  if (!validate(form)) {
+    return;
+  }
+
+  if (form.id) {
+    updateMovie();
+  } else {
+    addMovie();
+  }
+
+  hideForm();
+};
+
 const addMovie = () => {
   if (!validate(form)) {
     return;
   }
 
-  movies.push(form);
-  resetForm();
-  hideForm();
+  const movie = {
+    id: Number(Date.now()),
+    name: form.name,
+    description: form.description,
+    image: form.image,
+    genres: form.genres,
+    inTheaters: form.inTheaters,
+  };
+  movies.value.push(movie);
+};
+
+const updateMovie = () => {
+  if (!validate(form)) {
+    return;
+  }
+
+  const movie = movies.value.find((m) => m.id === form.id);
+  if (!movie) {
+    return;
+  }
+
+  movie.name = form.name;
+  movie.description = form.description;
+  movie.image = form.image;
+  movie.genres = form.genres;
+  movie.inTheaters = form.inTheaters;
 };
 
 const validate = (input) => {
+  clearErrors();
   let success = true;
 
   if (!input.name) {
@@ -76,7 +129,7 @@ const validate = (input) => {
   }
 
   if (!input.image) {
-    errors.image = "Image are required";
+    errors.image = "Image is required";
     success = false;
   }
 
@@ -84,25 +137,32 @@ const validate = (input) => {
 };
 
 const resetForm = () => {
+  form.id = null;
   form.name = null;
   form.description = null;
   form.image = null;
   form.genres = [];
   form.inTheaters = false;
 
+  clearErrors();
+};
+
+const clearErrors = () => {
   errors.name = null;
   errors.image = null;
 };
 </script>
 
 <template>
-  <div class="max-w-full h-screen flex-col items-center justify-center mx-auto">
+  <div
+    class="max-w-full h-screen flex flex-col items-center justify-center mx-auto"
+  >
     <div
       v-if="showMovieForm"
       class="absolute inset-0 backdrop-blur bg-gray-800/40 z-10 flex items-center justify-center"
     >
       <form
-        @submit.prevent="addMovie"
+        @submit.prevent="saveMovie"
         class="shrink-0 w-full max-w-2xl rounded-md flex flex-col shadow-2xl bg-gray-800 p-4 space-y-5 text-white"
       >
         <div class="form-element">
@@ -141,7 +201,6 @@ const resetForm = () => {
               {{ genre }}
             </option>
           </select>
-          <span v-if="errors.genres">{{ errors.genres }}</span>
         </div>
         <div class="form-element">
           <label class="flex items-center justify-start space-x-2">
@@ -161,24 +220,37 @@ const resetForm = () => {
             type="submit"
             class="text-white bg-blue-400 rounded px-4 py-2"
           >
-            Create
+            Save
           </button>
         </div>
       </form>
     </div>
-    <div class="flex justify-end w-5/6 px-20 py-10">
-      <button
-        class="text-white bg-blue-500 rounded px-4 py-2"
-        @click="showForm"
-      >
-        Add Movie
-      </button>
+    <div class="w-full flex items-center justify-between max-w-6xl p-4 mb-4">
+      <div class="flex items-center justify-center gap-4 text-white">
+        <span> Total Movies: {{ totalMovies }}</span>
+        <span> / </span>
+        <span> Average Rating: {{ averageRating }}</span>
+      </div>
+      <div class="flex items-center justify-center space-x-5">
+        <button
+          class="text-white bg-blue-500 rounded-md px-4 py-2"
+          @click="resetRatings"
+        >
+          Reset Ratings
+        </button>
+        <button
+          class="text-white bg-blue-500 rounded-md px-4 py-2"
+          @click="showForm()"
+        >
+          Add Movie
+        </button>
+      </div>
     </div>
     <div class="flex items-center justify-center space-x-4">
       <div
-        v-for="movie in movies"
+        v-for="(movie, movieIndex) in movies"
         :key="movie.id"
-        class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl"
+        class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl group"
       >
         <div class="w-full h-[520px] overflow-hidden relative">
           <img
@@ -220,23 +292,39 @@ const resetForm = () => {
           <div class="h-24 flex-1">
             <p class="text-sm">{{ movie.description }}</p>
           </div>
-          <div class="w-full h-8 shrink-0 flex items-center justify-start">
-            <span class="text-xs mr-2 leading-7">
-              Rating: ({{ movie.rating ?? "-" }}/5)
-            </span>
-            <button
-              v-for="star in 5"
-              :key="`${movie.id}-star-${star}`"
-              class="size-5 cursor-pointer disabled:cursor-not-allowed"
-              :disabled="star === movie.rating"
-              @click="setMovieRating(movie, star)"
-            >
-              <StarIcon
-                :class="[
-                  star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
-                ]"
-              />
-            </button>
+          <div class="w-full h-10 shrink-0 flex justify-between">
+            <div class="flex items-center justify-start">
+              <span class="text-xs mr-2 leading-7">
+                Rating: ({{ movie.rating ?? "-" }}/5)
+              </span>
+              <button
+                v-for="star in 5"
+                :key="`${movie.id}-star-${star}`"
+                class="size-5 cursor-pointer disabled:cursor-not-allowed"
+                :disabled="star === movie.rating"
+                @click="updateRating(movieIndex, star)"
+              >
+                <StarIcon
+                  :class="[
+                    star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
+                  ]"
+                />
+              </button>
+            </div>
+            <div class="hidden group-hover:flex space-x-2">
+              <button
+                class="float-button hover:bg-indigo-500"
+                @click="editMovie(movieIndex)"
+              >
+                <PencilIcon class="size-4" />
+              </button>
+              <button
+                class="float-button hover:bg-red-500"
+                @click="removeMovie(movieIndex)"
+              >
+                <TrashIcon class="size-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -251,5 +339,9 @@ const resetForm = () => {
 
 .form-input {
   @apply w-full rounded-md bg-gray-900  border border-white/50 focus:border-blue-600 focus:outline-none px-2 py-1;
+}
+
+.float-button {
+  @apply rounded-full bg-gray-200 p-3 hover:text-white;
 }
 </style>
