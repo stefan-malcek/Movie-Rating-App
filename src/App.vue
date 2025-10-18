@@ -1,9 +1,9 @@
 <script setup>
 import { items } from "./movies.json";
 import { computed, reactive, ref } from "vue";
-import { StarIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/solid";
 import { cloneDeep } from "../utils/clone.js";
 import { normalizeRating } from "../utils/number.js";
+import MovieItem from "../components/MovieItem.vue";
 
 const movies = ref(cloneDeep(items));
 
@@ -19,8 +19,11 @@ const averageRating = computed(() => {
 
 const totalMovies = computed(() => movies.value.length);
 
-const updateRating = (movieIndex, rating) => {
-  movies.value[movieIndex].rating = normalizeRating(rating);
+const updateRating = (movieId, rating) => {
+  const movie = movies.value.find((m) => m.id === movieId);
+  if (movie) {
+    movie.rating = normalizeRating(rating);
+  }
 };
 
 const resetRatings = () => {
@@ -50,12 +53,12 @@ const errors = reactive({
   image: null,
 });
 
-const removeMovie = (movieIndex) => {
-  movies.value = movies.value.filter((_, index) => index !== movieIndex);
+const removeMovie = (movieId) => {
+  movies.value = movies.value.filter((movie) => movie.id !== movieId);
 };
 
-const editMovie = (movieIndex) => {
-  const movie = movies.value[movieIndex];
+const editMovie = (movieId) => {
+  const movie = movies.value.find((movie) => movie.id === movieId);
 
   form.id = movie.id;
   form.name = movie.name;
@@ -247,87 +250,14 @@ const clearErrors = () => {
       </div>
     </div>
     <div class="flex items-center justify-center space-x-4">
-      <div
-        v-for="(movie, movieIndex) in movies"
+      <MovieItem
+        v-for="movie in movies"
         :key="movie.id"
-        class="w-96 h-auto bg-white rounded-md flex flex-col items-center justify-center overflow-hidden shadow-2xl group"
-      >
-        <div class="w-full h-[520px] overflow-hidden relative">
-          <img
-            :src="movie.image"
-            :alt="`${movie.name} poster`"
-            class="object-cover object-center h-[600px]"
-          />
-          <div class="absolute right-0 top-0 size-16">
-            <StarIcon
-              class="size-16"
-              :class="movie.rating ? 'text-yellow-500' : 'text-gray-500'"
-            />
-            <span
-              v-if="movie.rating"
-              class="absolute inset-0 flex items-center justify-center text-xl text-yellow-800"
-            >
-              {{ movie.rating }}
-            </span>
-            <span
-              v-else
-              class="absolute inset-0 flex items-center justify-center text-xl text-gray-400"
-            >
-              -
-            </span>
-          </div>
-        </div>
-        <div class="w-full h-56 p-4 flex flex-col items-start justify-start">
-          <div class="w-full h-16 shrink-0">
-            <h3 class="text-2xl">{{ movie.name }}</h3>
-            <div class="flex items-center justify-start space-x-1">
-              <span
-                v-for="genre in movie.genres"
-                :key="`${movie.id}-genre-${genre}`"
-                class="text-xs bg-indigo-500 text-white py-0.5 px-2 rounded-full"
-                >{{ genre }}</span
-              >
-            </div>
-          </div>
-          <div class="h-24 flex-1">
-            <p class="text-sm">{{ movie.description }}</p>
-          </div>
-          <div class="w-full h-10 shrink-0 flex justify-between">
-            <div class="flex items-center justify-start">
-              <span class="text-xs mr-2 leading-7">
-                Rating: ({{ movie.rating ?? "-" }}/5)
-              </span>
-              <button
-                v-for="star in 5"
-                :key="`${movie.id}-star-${star}`"
-                class="size-5 cursor-pointer disabled:cursor-not-allowed"
-                :disabled="star === movie.rating"
-                @click="updateRating(movieIndex, star)"
-              >
-                <StarIcon
-                  :class="[
-                    star <= movie.rating ? 'text-yellow-500' : 'text-gray-500',
-                  ]"
-                />
-              </button>
-            </div>
-            <div class="hidden group-hover:flex space-x-2">
-              <button
-                class="float-button hover:bg-indigo-500"
-                @click="editMovie(movieIndex)"
-              >
-                <PencilIcon class="size-4" />
-              </button>
-              <button
-                class="float-button hover:bg-red-500"
-                @click="removeMovie(movieIndex)"
-              >
-                <TrashIcon class="size-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        :movie="movie"
+        @edit="editMovie"
+        @remove="removeMovie"
+        @update:rating="updateRating"
+      />
     </div>
   </div>
 </template>
