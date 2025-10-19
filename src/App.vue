@@ -5,6 +5,7 @@ import { cloneDeep } from "../utils/clone.js";
 import { normalizeRating } from "../utils/number.js";
 import MovieItem from "../components/MovieItem.vue";
 import MovieForm from "../components/MovieForm.vue";
+import AppModal from "../components/AppModal.vue";
 
 const movies = ref(cloneDeep(items));
 const selectedMovie = ref();
@@ -83,16 +84,17 @@ const updateMovie = (movieForm, existingMovie) => {
   <div
     class="max-w-full h-screen flex flex-col items-center justify-center mx-auto"
   >
-    <div
+    <AppModal
       v-if="showMovieDialog"
-      class="absolute inset-0 backdrop-blur bg-gray-800/40 z-10 flex items-center justify-center"
+      :title="selectedMovie ? 'Edit movie' : 'Add movie'"
+      @close="hideDialog"
     >
       <MovieForm
         :model-value="selectedMovie"
         @update:modelValue="saveMovie"
         @cancel="hideDialog"
       />
-    </div>
+    </AppModal>
     <div class="w-full flex items-center justify-between max-w-6xl p-4 mb-4">
       <div class="flex items-center justify-center gap-4 text-white">
         <span> Total Movies: {{ totalMovies }}</span>
