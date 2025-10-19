@@ -97,7 +97,7 @@ const clearErrors = () => {
 <template>
   <form
     @submit.prevent="updateModel"
-    class="shrink-0 w-full max-w-2xl rounded-md flex flex-col shadow-2xl bg-gray-800 p-4 space-y-5 text-white"
+    class="shrink-0 w-full flex flex-col space-y-5"
   >
     <div class="form-element">
       <label for="name">Name</label>
