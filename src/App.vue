@@ -66,19 +66,11 @@ const saveMovie = (movieForm) => {
 };
 
 const addMovie = (movieForm) => {
-  if (!movieForm) {
-    return;
-  }
-
   movieForm.rating = null;
   movies.value.push(movieForm);
 };
 
 const updateMovie = (movieForm, existingMovie) => {
-  if (!movieForm || !existingMovie) {
-    return;
-  }
-
   existingMovie.name = movieForm.name;
   existingMovie.description = movieForm.description;
   existingMovie.image = movieForm.image;
