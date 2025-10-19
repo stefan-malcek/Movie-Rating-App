@@ -1,20 +1,13 @@
 <script setup>
 import { items } from "./movies.json";
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { cloneDeep } from "../utils/clone.js";
 import { normalizeRating } from "../utils/number.js";
 import MovieItem from "../components/MovieItem.vue";
 import MovieForm from "../components/MovieForm.vue";
 
 const movies = ref(cloneDeep(items));
-const selectedMovie = reactive({
-  id: null,
-  name: null,
-  description: null,
-  image: null,
-  genres: [],
-  inTheaters: false,
-});
+const selectedMovie = ref();
 
 const averageRating = computed(() => {
   const filledRatings = movies.value.filter((m) => m.rating);
@@ -52,25 +45,19 @@ const removeMovie = (movieId) => {
 };
 
 const editMovie = (movieId) => {
-  const movie = movies.value.find((movie) => movie.id === movieId);
-
-  selectedMovie.id = movie.id;
-  selectedMovie.name = movie.name;
-  selectedMovie.description = movie.description;
-  selectedMovie.image = movie.image;
-  selectedMovie.genres = movie.genres;
-  selectedMovie.inTheaters = movie.inTheaters;
-
+  selectedMovie.value = movies.value.find((movie) => movie.id === movieId);
   showForm();
 };
 
 const hideDialog = () => {
   showMovieDialog.value = false;
+  selectedMovie.value = null;
 };
 
 const saveMovie = (movieForm) => {
-  if (movieForm.id) {
-    updateMovie(movieForm);
+  const existingMovie = movies.value.find((m) => m.id === movieForm.id);
+  if (existingMovie) {
+    updateMovie(movieForm, existingMovie);
   } else {
     addMovie(movieForm);
   }
@@ -83,32 +70,20 @@ const addMovie = (movieForm) => {
     return;
   }
 
-  const movie = {
-    id: Number(Date.now()),
-    name: movieForm.name,
-    description: movieForm.description,
-    image: movieForm.image,
-    genres: movieForm.genres,
-    inTheaters: movieForm.inTheaters,
-  };
-  movies.value.push(movie);
+  movieForm.rating = null;
+  movies.value.push(movieForm);
 };
 
-const updateMovie = (movieForm) => {
-  if (!movieForm) {
+const updateMovie = (movieForm, existingMovie) => {
+  if (!movieForm || !existingMovie) {
     return;
   }
 
-  const movie = movies.value.find((m) => m.id === movieForm.id);
-  if (!movie) {
-    return;
-  }
-
-  movie.name = movieForm.name;
-  movie.description = movieForm.description;
-  movie.image = movieForm.image;
-  movie.genres = movieForm.genres;
-  movie.inTheaters = movieForm.inTheaters;
+  existingMovie.name = movieForm.name;
+  existingMovie.description = movieForm.description;
+  existingMovie.image = movieForm.image;
+  existingMovie.genres = movieForm.genres;
+  existingMovie.inTheaters = movieForm.inTheaters;
 };
 </script>
 

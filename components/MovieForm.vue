@@ -16,8 +16,20 @@ const { modelValue } = defineProps({
   },
 });
 
-const form = reactive({ ...modelValue });
-const availableGenres = reactive(["Action", "Comedy", "Drama", "Sci-Fi"]);
+const form = reactive({
+  id: modelValue?.id,
+  name: modelValue?.name,
+  description: modelValue?.description,
+  image: modelValue?.image,
+  genres: modelValue?.genres || [],
+  inTheaters: modelValue?.inTheaters || false,
+});
+const genres = reactive([
+  { text: "Drama", value: "Drama" },
+  { text: "Crime", value: "Crime" },
+  { text: "Action", value: "Action" },
+  { text: "Comedy", value: "Comedy" },
+]);
 const errors = reactive({
   name: null,
   image: null,
@@ -30,8 +42,17 @@ const updateModel = () => {
     return;
   }
 
-  emit("update:modelValue", { ...form });
+  const data = {
+    id: form.id || Number(Date.now()),
+    name: form.name,
+    description: form.description,
+    image: form.image,
+    genres: form.genres,
+    inTheaters: form.inTheaters,
+  };
+
   resetForm();
+  emit("update:modelValue", data);
 };
 
 const validate = (input) => {
@@ -52,8 +73,8 @@ const validate = (input) => {
 };
 
 const cancel = () => {
-  emit("cancel");
   resetForm();
+  emit("cancel");
 };
 
 const resetForm = () => {
@@ -99,8 +120,8 @@ const clearErrors = () => {
     <div class="form-element">
       <label for="genres">Genres</label>
       <select id="genres" multiple v-model="form.genres" class="form-input">
-        <option v-for="genre in availableGenres" :key="genre" :value="genre">
-          {{ genre }}
+        <option v-for="genre in genres" :key="genre.value" :value="genre.value">
+          {{ genre.text }}
         </option>
       </select>
     </div>
