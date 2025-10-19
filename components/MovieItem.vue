@@ -33,7 +33,10 @@ const editMovie = () => {
       <div class="absolute right-0 top-0 size-16">
         <StarIcon
           class="size-16"
-          :class="movieRated ? 'text-yellow-500' : 'text-gray-500'"
+          :class="{
+            'text-yellow-500': movieRated,
+            'text-gray-500': !movieRated,
+          }"
         />
         <span
           v-if="movieRated"
@@ -96,4 +99,8 @@ const editMovie = () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.float-button {
+  @apply rounded-full bg-gray-200 p-3 hover:text-white;
+}
+</style>
