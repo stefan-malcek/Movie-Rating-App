@@ -1,16 +1,16 @@
 <script setup>
 import { items } from "./movies.json";
 import { computed, defineAsyncComponent, ref } from "vue";
-import { cloneDeep } from "../utils/clone.js";
-import { normalizeRating } from "../utils/number.js";
-import MovieItem from "../components/MovieItem.vue";
+import { cloneDeep } from "./utils/clone.js";
+import { normalizeRating } from "./utils/number.js";
+import MovieItem from "./components/MovieItem.vue";
 
-const AppModal = defineAsyncComponent(() =>
-  import('../components/AppModal.vue')
-)
-const MovieForm = defineAsyncComponent(() =>
-  import('../components/MovieForm.vue')
-)
+const AppModal = defineAsyncComponent(
+  () => import("./components/AppModal.vue"),
+);
+const MovieForm = defineAsyncComponent(
+  () => import("./components/MovieForm.vue"),
+);
 
 const movies = ref(cloneDeep(items));
 const selectedMovie = ref();
