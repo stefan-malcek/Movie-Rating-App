@@ -30,5 +30,3 @@ const close = () => {
     </div>
   </div>
 </template>
-
-<style scoped></style>
