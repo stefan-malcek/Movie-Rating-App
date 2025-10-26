@@ -91,7 +91,7 @@ const updateMovie = (movieForm, existingMovie) => {
   >
     <Transition name="modal">
       <AppModal
-        v-show="showMovieDialog"
+        v-if="showMovieDialog"
         :title="selectedMovie ? 'Edit movie' : 'Add movie'"
         @close="hideDialog"
       >
