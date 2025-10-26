@@ -40,7 +40,7 @@ const emit = defineEmits(["cancel", "update:modelValue"]);
 const input = useTemplateRef("nameInput");
 
 onMounted(() => {
-  input.value.focus();
+  input.value?.focus();
 });
 
 const updateModel = () => {
