@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { onMounted, reactive, useTemplateRef } from "vue";
 
 const { modelValue } = defineProps({
   modelValue: {
@@ -36,6 +36,12 @@ const errors = reactive({
 });
 
 const emit = defineEmits(["cancel", "update:modelValue"]);
+
+const input = useTemplateRef("nameInput");
+
+onMounted(() => {
+  input.value?.focus();
+});
 
 const updateModel = () => {
   if (!validate(form)) {
@@ -101,7 +107,13 @@ const clearErrors = () => {
   >
     <div class="form-element">
       <label for="name">Name</label>
-      <input id="name" type="text" v-model="form.name" class="form-input" />
+      <input
+        id="name"
+        type="text"
+        v-model="form.name"
+        class="form-input"
+        ref="nameInput"
+      />
       <span v-if="errors.name" class="text-red-500">{{ errors.name }}</span>
     </div>
     <div class="form-element">
