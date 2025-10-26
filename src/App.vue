@@ -89,17 +89,19 @@ const updateMovie = (movieForm, existingMovie) => {
   <div
     class="max-w-full h-screen flex flex-col items-center justify-center mx-auto"
   >
-    <AppModal
-      v-if="showMovieDialog"
-      :title="selectedMovie ? 'Edit movie' : 'Add movie'"
-      @close="hideDialog"
-    >
-      <MovieForm
-        :model-value="selectedMovie"
-        @update:modelValue="saveMovie"
-        @cancel="hideDialog"
-      />
-    </AppModal>
+    <Transition name="modal">
+      <AppModal
+        v-show="showMovieDialog"
+        :title="selectedMovie ? 'Edit movie' : 'Add movie'"
+        @close="hideDialog"
+      >
+        <MovieForm
+          :model-value="selectedMovie"
+          @update:modelValue="saveMovie"
+          @cancel="hideDialog"
+        />
+      </AppModal>
+    </Transition>
     <div class="w-full flex items-center justify-between max-w-6xl p-4 mb-4">
       <div class="flex items-center justify-center gap-4 text-white">
         <span> Total Movies: {{ totalMovies }}</span>
@@ -134,4 +136,15 @@ const updateMovie = (movieForm, existingMovie) => {
   </div>
 </template>
 
-<style></style>
+<style>
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.5s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  transform: translateY(-50px);
+  opacity: 0;
+}
+</style>
