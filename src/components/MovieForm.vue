@@ -71,7 +71,7 @@ const validate = (input) => {
   }
 
   if (!input.image) {
-    errors.image = "Image is required";
+    errors.image = "MovieImage is required";
     success = false;
   }
 
