@@ -30,5 +30,3 @@ const movie = computed(() => movies.value.find((m) => m.id === id));
     </div>
   </div>
 </template>
-
-<style></style>

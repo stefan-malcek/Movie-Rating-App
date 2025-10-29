@@ -77,7 +77,7 @@ const removeMovie = () => {
             <TrashIcon class="size-4" />
           </button>
           <RouterLink
-            class="float-button hover:bg-red-500"
+            class="float-button hover:bg-green-500"
             :to="{ name: 'movie-detail', params: { id: movie.id } }"
           >
             <EyeIcon class="size-4" />
@@ -88,7 +88,7 @@ const removeMovie = () => {
   </div>
 </template>
 
-<style scoped>
+<style>
 .float-button {
   @apply rounded-full bg-gray-200 p-3 hover:text-white;
 }
